@@ -89,8 +89,11 @@ def main(_):
             # train and validate
             is_summary, is_summary_image, is_validate = False, False, False
 
-            summary_interval = 5
-            summary_val_interval = 10
+#            summary_interval = 5
+#            summary_val_interval = 10
+            summary_interval = 20
+            summary_val_interval = 20
+            summary_metadata_interval = 20
             summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
 
 
@@ -107,9 +110,14 @@ def main(_):
                         is_summary = True
                     else:
                         is_summary = False
+                        
+                    if counter % summary_metadata_interval == 0:
+                        is_metadata = True
+                    else:
+                        is_metadata = False
                     
                     start_time = time.time()
-                    ret = model.train_step( sess, batch, train=True, summary = is_summary )
+                    ret = model.train_step( sess, batch, train=True, summary=is_summary, metadata=is_metadata )
                     forward_time = time.time() - start_time
                     batch_time = time.time() - batch_time
 
@@ -123,6 +131,10 @@ def main(_):
                         print("summary_interval now")
                         summary_writer.add_summary(ret[-1], global_counter)
                             
+                    if counter % summary_metadata_interval == 0:
+                        print("summary_metadata_interval now")
+                        summary_writer.add_run_metadata(tf.RunMetadata(), 'step%d' % counter)
+
                     #print(counter, summary_val_interval, counter % summary_val_interval)
                     if counter % summary_val_interval == 0:
                         print("summary_val_interval now")

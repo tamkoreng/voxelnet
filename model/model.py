@@ -165,7 +165,7 @@ class RPN3D(object):
             tf.summary.image('predict/front_view_rgb', self.rgb),
         ])
 
-    def train_step(self, session, data, train=False, summary=False):
+    def train_step(self, session, data, train=False, summary=False, metadata=False):
         # input:
         #     (N) tag
         #     (N, N') label
@@ -207,9 +207,17 @@ class RPN3D(object):
         if summary:
             output_feed.append(self.train_summary)
         # TODO: multi-gpu support for test and predict step
-        return session.run(output_feed, input_feed)
+        
+        if metadata:
+            return session.run(output_feed, 
+                               input_feed,
+                               options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE),
+                               run_metadata=tf.RunMetadata())
+        else:
+            return session.run(output_feed, input_feed)
 
-    def validate_step(self, session, data, summary=False):
+
+    def validate_step(self, session, data, summary=False, metadata=False):
         # input:
         #     (N) tag
         #     (N, N') label
@@ -247,7 +255,15 @@ class RPN3D(object):
         output_feed = [self.loss, self.reg_loss, self.cls_loss]
         if summary:
             output_feed.append(self.validate_summary)
-        return session.run(output_feed, input_feed)
+
+        if metadata:
+            return session.run(output_feed, 
+                               input_feed,
+                               options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE),
+                               run_metadata=tf.RunMetadata())
+        else:
+            return session.run(output_feed, input_feed)
+ 
 
     def predict_step(self, session, data, summary=False, vis=False):
         # input:

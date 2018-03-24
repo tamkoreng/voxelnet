@@ -1,5 +1,9 @@
+import os
+from glob import glob
+
 import numpy as np
 from scipy.misc import imread
+from tqdm import tqdm
 
 CAM = 2
 
@@ -79,24 +83,23 @@ def align_img_and_pc(img_dir, pc_dir, calib_dir):
     return points
 
 # update the following directories
-IMG_ROOT = '/media/hdc/KITTI/image/training/image_2/'
-PC_ROOT = '/media/hdc/KITTI/point_cloud/raw_bin_files/training/velodyne/'
-CALIB_ROOT = '/media/hdc/KITTI/calib/data_object_calib/training/calib/'
+IMG_ROOT = '/home/ubuntu/proj/data/validation/image_2/'
+PC_ROOT = '/home/ubuntu/proj/data/validation/velodyne_orig/'
+CROP_PC_ROOT = '/home/ubuntu/proj/data/validation/velodyne/'
+CALIB_ROOT = '/home/ubuntu/proj/data/validation/calib/'
 
+file_list = glob(IMG_ROOT + '*.*')
 
-
-for frame in range(0, 7481):
+# for frame in range(0, 7481):
+for frame in tqdm(file_list):
+    frame = os.path.basename(frame)
+    frame = os.path.splitext(frame)[0]
+    frame = int(frame)
     img_dir = IMG_ROOT + '%06d.png' % frame
     pc_dir = PC_ROOT + '%06d.bin' % frame
     calib_dir = CALIB_ROOT + '%06d.txt' % frame
 
     points = align_img_and_pc(img_dir, pc_dir, calib_dir)
     
-    output_name = PC_ROOT + frame + '.bin'
+    output_name = CROP_PC_ROOT + '%06d.bin' % frame
     points[:,:4].astype('float32').tofile(output_name)
-
-
-
-
-
-
